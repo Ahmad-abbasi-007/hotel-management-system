@@ -3,6 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 
+const requestServices = async () => {
+  const { data } = await api.get('/services');
+  return data;
+};
+
 export default function ServicesManage() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -11,13 +16,22 @@ export default function ServicesManage() {
   const [message, setMessage] = useState(null);
 
   const fetchServices = async () => {
-    const { data } = await api.get('/services');
-    setServices(data);
+    setServices(await requestServices());
   };
 
   useEffect(() => {
     if (!user || user.role !== 'admin') { navigate('/'); return; }
-    fetchServices();
+    let active = true;
+    const loadServices = async () => {
+      try {
+        const data = await requestServices();
+        if (active) setServices(data);
+      } catch (err) {
+        if (active) setMessage({ type: 'error', text: err.response?.data?.message || 'Services load nahi ho sakin' });
+      }
+    };
+    loadServices();
+    return () => { active = false; };
   }, [user, navigate]);
 
   const handleAdd = async (e) => {

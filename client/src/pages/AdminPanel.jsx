@@ -12,6 +12,11 @@ const EMPTY_FORM = {
   image: ''
 };
 
+const requestRooms = async () => {
+  const { data } = await api.get('/rooms');
+  return data;
+};
+
 export default function AdminPanel() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -25,9 +30,8 @@ export default function AdminPanel() {
   const fetchRooms = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/rooms');
-      setRooms(data);
-    } catch (err) {
+      setRooms(await requestRooms());
+    } catch {
       setMessage({ type: 'error', text: 'Rooms load nahi ho saken' });
     } finally {
       setLoading(false);
@@ -36,7 +40,19 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (!user || user.role !== 'admin') { navigate('/'); return; }
-    fetchRooms();
+    let active = true;
+    const loadRooms = async () => {
+      try {
+        const data = await requestRooms();
+        if (active) setRooms(data);
+      } catch {
+        if (active) setMessage({ type: 'error', text: 'Rooms load nahi ho saken' });
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadRooms();
+    return () => { active = false; };
   }, [user, navigate]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });

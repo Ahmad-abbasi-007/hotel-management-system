@@ -6,28 +6,23 @@ const User = require('../src/models/User');
 const Room = require('../src/models/Room');
 const Booking = require('../src/models/Booking');
 
-// Use real MongoDB Atlas from .env
 let TEST_DB_URI = process.env.MONGO_URI;
 
 if (!TEST_DB_URI) {
-  console.error('❌ MONGO_URI missing. Tests cannot run.');
+  console.error('MONGO_URI is required to run the API tests.');
   process.exit(1);
 }
 
-// Replace main DB name with a test DB name to keep data isolated
 TEST_DB_URI = TEST_DB_URI.replace(
   /mongodb\.net\/([^?]+)/,
   'mongodb.net/hotelDB_test'
 );
-
-console.log('🧪 Test DB:', TEST_DB_URI.replace(/:[^@]+@/, ':****@'));
 
 let adminToken, guestToken, receptionistToken;
 let roomId;
 
 beforeAll(async () => {
   await mongoose.connect(TEST_DB_URI);
-  console.log('✅ Connected to test DB');
 });
 
 afterAll(async () => {

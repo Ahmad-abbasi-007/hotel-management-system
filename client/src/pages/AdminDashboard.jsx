@@ -1,13 +1,17 @@
-import { useEffect, useState, useContext } from 'react';
+import { lazy, Suspense, useEffect, useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
-import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
-  PieChart, Pie, Cell, Legend, LineChart, Line
-} from 'recharts';
 
-const COLORS = ['#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#7c3aed'];
+const DashboardCharts = lazy(() => import('./DashboardCharts'));
+
+const requestStats = async (range = {}) => {
+  const params = new URLSearchParams();
+  if (range.from) params.append('from', range.from);
+  if (range.to) params.append('to', range.to);
+  const { data } = await api.get(`/stats?${params.toString()}`);
+  return data;
+};
 
 export default function AdminDashboard() {
   const { user, logout } = useContext(AuthContext);
@@ -20,11 +24,7 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (range.from) params.append('from', range.from);
-      if (range.to) params.append('to', range.to);
-      const { data } = await api.get(`/stats?${params.toString()}`);
-      setStats(data);
+      setStats(await requestStats(range));
     } catch (err) {
       setError(err.response?.data?.message || 'Stats load fail');
     } finally {
@@ -34,9 +34,20 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user || user.role !== 'admin') { navigate('/'); return; }
-    fetchStats();
-    // eslint-disable-next-line
-  }, []);
+    let active = true;
+    const loadStats = async () => {
+      try {
+        const data = await requestStats();
+        if (active) setStats(data);
+      } catch (err) {
+        if (active) setError(err.response?.data?.message || 'Stats load fail');
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadStats();
+    return () => { active = false; };
+  }, [user, navigate]);
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -99,50 +110,9 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Revenue per month */}
-              <div className="bg-white rounded-lg shadow p-4">
-                <h3 className="font-bold text-gray-800 mb-3">Revenue per Month</h3>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={stats.revenueChart}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="revenue" fill="#2563eb" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Bookings by type */}
-              <div className="bg-white rounded-lg shadow p-4">
-                <h3 className="font-bold text-gray-800 mb-3">Bookings by Room Type</h3>
-                <ResponsiveContainer width="100%" height={280}>
-                  <PieChart>
-                    <Pie data={stats.typeChart} dataKey="count" nameKey="type" cx="50%" cy="50%" outerRadius={90} label>
-                      {stats.typeChart.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                    </Pie>
-                    <Legend />
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Occupancy over time */}
-              <div className="bg-white rounded-lg shadow p-4 lg:col-span-2">
-                <h3 className="font-bold text-gray-800 mb-3">Bookings Over Last 30 Days</h3>
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={stats.occupancyChart}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="count" stroke="#16a34a" strokeWidth={2} dot={{ r: 3 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            <Suspense fallback={<div className="text-center py-8">Loading charts...</div>}>
+              <DashboardCharts stats={stats} />
+            </Suspense>
           </>
         )}
       </div>

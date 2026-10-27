@@ -3,6 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 
+const requestReceptionistData = async () => Promise.all([
+  api.get('/bookings'),
+  api.get('/rooms')
+]);
+
 export default function ReceptionistPanel() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -20,10 +25,7 @@ export default function ReceptionistPanel() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [bRes, rRes] = await Promise.all([
-        api.get('/bookings'),
-        api.get('/rooms')
-      ]);
+      const [bRes, rRes] = await requestReceptionistData();
       setBookings(bRes.data);
       setRooms(rRes.data);
     } catch (err) {
@@ -38,7 +40,22 @@ export default function ReceptionistPanel() {
       navigate('/');
       return;
     }
-    fetchData();
+    let active = true;
+    const loadData = async () => {
+      try {
+        const [bRes, rRes] = await requestReceptionistData();
+        if (active) {
+          setBookings(bRes.data);
+          setRooms(rRes.data);
+        }
+      } catch (err) {
+        if (active) console.error(err);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { active = false; };
   }, [user, navigate]);
 
   const handleStatusChange = async (id, status) => {

@@ -25,7 +25,7 @@ export default function RoomDetails() {
         ]);
         setRoom(roomRes.data);
         setServices(serviceRes.data);
-      } catch (err) {
+      } catch {
         setError('Room load nahi ho saka');
       } finally {
         setLoading(false);

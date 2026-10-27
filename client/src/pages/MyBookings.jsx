@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 
+const requestBookings = async () => {
+  const { data } = await api.get('/bookings/my');
+  return data;
+};
+
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,17 +15,28 @@ export default function MyBookings() {
 
   const fetchBookings = async () => {
     try {
-      const { data } = await api.get('/bookings/my');
-      setBookings(data);
-    } catch (err) {
-      console.error(err);
+      setBookings(await requestBookings());
+    } catch {
+      setMessage({ type: 'error', text: 'Bookings load nahi ho sakin' });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBookings();
+    let active = true;
+    const loadBookings = async () => {
+      try {
+        const data = await requestBookings();
+        if (active) setBookings(data);
+      } catch {
+        if (active) setMessage({ type: 'error', text: 'Bookings load nahi ho sakin' });
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadBookings();
+    return () => { active = false; };
   }, []);
 
   const handleCancel = async (id) => {
@@ -46,7 +62,7 @@ export default function MyBookings() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: 'Invoice download fail ho gaya' });
     } finally {
       setDownloadingId(null);

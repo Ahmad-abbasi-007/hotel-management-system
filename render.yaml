@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: zenvio-hotel-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGO_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
