@@ -25,6 +25,8 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) return callback(null, true);
     // Allow any *.onrender.com preview domain
     if (/\.onrender\.com$/.test(origin)) return callback(null, true);
+    // Allow any *.vercel.app frontend preview domain
+    if (/\.vercel\.app$/.test(origin)) return callback(null, true);
     return callback(new Error('CORS not allowed: ' + origin));
   },
   credentials: true

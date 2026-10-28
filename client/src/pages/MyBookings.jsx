@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
+import Navbar from '../components/Navbar';
 
 const requestBookings = async () => {
   const { data } = await api.get('/bookings/my');
@@ -79,23 +80,7 @@ export default function MyBookings() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-blue-700 text-white px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 shadow">
-        <h1 className="font-bold text-xl">🏨 My Bookings</h1>
-        <div className="flex gap-3 flex-wrap">
-          <Link
-            to="/rooms"
-            className="text-sm bg-white text-blue-700 px-3 py-1 rounded font-semibold"
-          >
-            Rooms
-          </Link>
-          <Link
-            to="/"
-            className="text-sm bg-green-500 px-3 py-1 rounded font-semibold"
-          >
-            Home
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-4xl mx-auto p-4 sm:p-8">
         {message && (

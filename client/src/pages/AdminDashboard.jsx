@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import Navbar from '../components/Navbar';
 
 const DashboardCharts = lazy(() => import('./DashboardCharts'));
 
@@ -53,15 +54,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-blue-700 text-white px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 shadow">
-        <h1 className="font-bold text-xl">📊 Admin Dashboard</h1>
-        <div className="flex items-center gap-3 flex-wrap">
-          <Link to="/" className="text-sm bg-white text-blue-700 px-3 py-1 rounded font-semibold">Home</Link>
-          <Link to="/admin" className="text-sm bg-green-500 px-3 py-1 rounded font-semibold">Manage Rooms</Link>
-          <span className="text-sm">{user?.name}</span>
-          <button onClick={handleLogout} className="bg-red-500 px-3 py-1 rounded text-sm font-semibold">Logout</button>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-7xl mx-auto p-4 sm:p-8">
         {/* Date Range Filter */}

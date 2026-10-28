@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import Navbar from '../components/Navbar';
 
 const requestReceptionistData = async () => Promise.all([
   api.get('/bookings'),
@@ -100,14 +101,7 @@ export default function ReceptionistPanel() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-blue-700 text-white px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 shadow">
-        <h1 className="font-bold text-xl">🛎️ Receptionist Panel</h1>
-        <div className="flex items-center gap-3">
-          <Link to="/" className="text-sm bg-white text-blue-700 px-3 py-1 rounded font-semibold">Home</Link>
-          <span className="text-sm">{user?.name}</span>
-          <button onClick={handleLogout} className="bg-red-500 px-3 py-1 rounded text-sm font-semibold">Logout</button>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-6xl mx-auto p-4 sm:p-8">
         {message && (

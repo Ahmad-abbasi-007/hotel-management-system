@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
+import Navbar from '../components/Navbar';
 
 export default function RoomDetails() {
   const { id } = useParams();
@@ -95,10 +96,7 @@ export default function RoomDetails() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-blue-700 text-white px-4 sm:px-8 py-4 flex justify-between items-center">
-        <h1 className="font-bold text-xl">🏨 Room Details</h1>
-        <Link to="/rooms" className="text-sm bg-white text-blue-700 px-3 py-1 rounded font-semibold">← Back</Link>
-      </nav>
+      <Navbar />
 
       <div className="max-w-4xl mx-auto p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Room Info */}
